@@ -1,0 +1,74 @@
+--STORE PROCEDURE POSTGRES SQL
+--FORMA DE IMPLEMENTAR UN PROCEDIMIENTO ALMACENADO EN POSTGRES VENTAS POR VENDEDOR
+DROP FUNCTION SPVXV();
+
+CREATE OR REPLACE FUNCTION SPVXV(
+		OUT vendedor_var VENDEDOR.nom_vendedor%type,
+		OUT total_ventas bigint) 
+RETURNS setof record AS $$
+BEGIN	
+	return query select VENDEDOR.nom_vendedor,sum(FACTURA.val_factura)
+				FROM VENDEDOR
+				INNER JOIN CLIENTE ON CLIENTE.cod_vendedor=VENDEDOR.cod_vendedor
+				INNER JOIN FACTURA ON FACTURA.cod_cliente=CLIENTE.cod_cliente
+				GROUP BY nom_vendedor;
+RETURN;
+END;
+$$ LANGUAGE PLPGSQL;
+
+
+
+ --FORMA DE IMPLEMENTAR UN PROCEDIMIENTO ALMACENADO EN POSTGRES VENTAS POR CIUDAD
+DROP FUNCTION SPVXC();
+
+CREATE OR REPLACE FUNCTION SPVXC(
+		OUT ciudad_var CIUDAD.nom_ciudad%type,
+		OUT total_ventas bigint) 
+RETURNS setof record AS $$
+BEGIN	
+	return query select CIUDAD.nom_ciudad,sum(FACTURA.val_factura)
+					FROM CIUDAD
+						INNER JOIN CLIENTE ON CLIENTE.cod_ciudad=CIUDAD.cod_ciudad
+						INNER JOIN FACTURA ON FACTURA.cod_cliente=CLIENTE.cod_cliente
+					GROUP BY CIUDAD.nom_ciudad;
+RETURN;
+END;
+$$ LANGUAGE PLPGSQL;
+
+
+ --FORMA DE IMPLEMENTAR UN PROCEDIMIENTO ALMACENADO EN POSTGRES VENTAS POR FORMA DE PAGO
+DROP FUNCTION SPVXFP();
+
+CREATE OR REPLACE FUNCTION SPVXFP(
+		OUT f_pago_var F_PAGO.nom_f_pago%type,
+		OUT total_ventas bigint) 
+RETURNS setof record AS $$
+BEGIN	
+	return query SELECT f_pago.nom_f_pago,SUM(FACTURA.val_factura)
+FROM F_PAGO
+	INNER JOIN CLIENTE ON F_PAGO.cod_f_pago =CLIENTE.cod_f_pago
+	INNER JOIN FACTURA ON FACTURA.cod_cliente=CLIENTE.cod_cliente
+GROUP BY F_PAGO.nom_f_pago;
+RETURN;
+END;
+$$ LANGUAGE PLPGSQL;
+
+
+ --FORMA DE IMPLEMENTAR UN PROCEDIMIENTO ALMACENADO EN POSTGRES VENTAS POR VENDEDOR Y FORMA DE PAGO
+DROP FUNCTION SPVXVXFP();
+
+CREATE OR REPLACE FUNCTION SPVXVXFP(
+		OUT vendedor_var VENDEDOR.nom_vendedor%type,
+		OUT f_pago_var F_PAGO.nom_f_pago%type,
+		OUT total_ventas bigint) 
+RETURNS setof record AS $$
+BEGIN	
+	return query SELECT VENDEDOR.nom_vendedor,f_pago.nom_f_pago,SUM(FACTURA.val_factura)
+FROM F_PAGO
+	INNER JOIN CLIENTE ON F_PAGO.cod_f_pago =CLIENTE.cod_f_pago
+	INNER JOIN FACTURA ON FACTURA.cod_cliente=CLIENTE.cod_cliente
+	INNER JOIN VENDEDOR ON CLIENTE.cod_vendedor=VENDEDOR.cod_vendedor
+GROUP BY F_PAGO.nom_f_pago, VENDEDOR.nom_vendedor;
+RETURN;
+END;
+$$ LANGUAGE PLPGSQL;
